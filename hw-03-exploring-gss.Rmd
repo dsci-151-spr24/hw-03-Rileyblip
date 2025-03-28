@@ -6,7 +6,7 @@ output: html_document
 
 ```{r include = FALSE}
 knitr::opts_chunk$set(
-  eval = FALSE,
+  eval = TRUE,
   out.width = "80%",
   fig.asp = 0.618,
   fig.width = 10,
@@ -52,6 +52,10 @@ You can load them by running the following in your Console:
 ```{r load-packages, message = FALSE, eval = TRUE}
 library(tidyverse)
 library(dsbox)
+library(openintro)
+library(flextable)
+library(parsnip)
+library(tidymodels)
 ```
 
 ## Data
@@ -105,23 +109,72 @@ The responses to these questions are recorded in the `emailhr` and `emailmin` va
 For example, if the response is 2.5 hrs, this would be recorded as `emailhr = 2` and `emailmin = 30`.
 
 3.  Create a new variable called `email` that combines these two variables to reports the number of minutes the respondents spend on email weekly.
+```{r}
+gss16 <- gss16 %>%
+  mutate(email = as.numeric((emailhr*60)+emailmin))
+```
 
 4.  Visualize the distribution of this new variable.
     Find the mean and the median number of minutes respondents spend on email weekly.
     Is the mean or the median a better measure of the typical among of time Americans spend on email weekly?
     Why?
+    
+```{r}
+gss16 %>%
+  ggplot(aes(x = email)) +
+  geom_histogram()
+
+gss16 %>%
+  summarise(means = mean(email, na.rm = TRUE), medians = median(email, na.rm = TRUE))
+```
+***The mean of the time spent on the emails is 416.8 minutes. The median is 120 minutes. I feel like the median is a better measure than the mean because it is a full and exact number rather than a number that lasts forever.***
 
 5.  Create another new variable, `snap_insta` that is coded as "Yes" if the respondent reported using any of Snapchat (`snapchat`) or Instagram (`instagrm`), and "No" if not.
     If the recorded value was `NA` for both of these questions, the value in your new variable should also be `NA`.
 
+```{r}
+gss16 <- gss16 %>%
+  mutate(snap_insta = snapchat, snap_insta = instagrm)
+```
+
 6.  Calculate the percentage of Yes's for `snap_insta` among those who answered the question, i.e. excluding `NA`s.
+
+***30.8% responders answered Yes.***
+```{r}
+snap_insta_applicable_answers <- gss16 %>%
+  filter(snap_insta %in% c("Yes", "No")) 
+
+response_counts = snap_insta_applicable_answers %>%
+  count(snap_insta)
+response_counts$n / sum(response_counts$n) * 100
+response_counts$snap_insta
+```
 
 7.  What are the possible responses to the question *Last week were you working full time, part time, going to school, keeping house, or what?* and how many respondents chose each of these answers?
     Note that this information is stored in the `wrkstat` variable.
+```{r} 
+gss16 %>%
+  count(wrkstat)
+```
+***The possible responses for this question are "Keeping house" by 284 respondents, "Other" by 89 respondents, "Retired" by 574 respondents, "School" by 76 respondents, "Temp not working" by 57 respondents, "Unempl, laid off" by 118 respondents, "Working fulltime" by 1321 respondents, "Working parttime" by 345 respondents, and 3 people didn't respond.***
 
 8.  Fit a model predicting `email` (number of minutes per week spent on email) from `educ` (number of years of education), `wrkstat`, and `snap_insta`.
     Interpret the slopes for each of these variables.
+```{r}
+gss16 <- gss16 %>%
+  mutate(gss16 == if_else(snap_insta == TRUE, "1", "0"))
+```
+```{r}
+ educ_wrkstat_fit <- linear_reg() %>%
+  set_engine("lm") %>%
+  fit(educ~wrkstat, data = gss16) %>%
+  tidy()
 
+
+educ_wrkstat_fit %>% flextable()
+
+
+```
 9.  Create a predicted values vs. residuals plot for this model.
     Are there any issues with the model?
     If yes, describe them.
@@ -154,6 +207,7 @@ Responses that were originally Don't know, No answer and Not applicable are alre
 10. In a new variable, recode `advfront` such that Strongly Agree and Agree are mapped to `"Yes"`, and Disagree and Strongly disagree are mapped to `"No"`.
     The remaining levels can be left as is.
     Don't overwrite the existing `advfront`, instead pick a different, informative name for your new variable.
+
 
 11. In a new variable, recode `polviews` such that Extremely liberal, Liberal, and Slightly liberal, are mapped to `"Liberal"`, and Slghtly conservative, Conservative, and Extrmly conservative disagree are mapped to `"Conservative"`.
     The remaining levels can be left as is.
