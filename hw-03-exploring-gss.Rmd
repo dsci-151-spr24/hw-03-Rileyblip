@@ -165,19 +165,80 @@ gss16 <- gss16 %>%
   mutate(gss16 == if_else(snap_insta == TRUE, "1", "0"))
 ```
 ```{r}
- educ_wrkstat_fit <- linear_reg() %>%
+ email_educ_fit <- linear_reg() %>%
   set_engine("lm") %>%
-  fit(educ~wrkstat, data = gss16) %>%
+  fit(email~educ, data = gss16) %>%
   tidy()
 
 
-educ_wrkstat_fit %>% flextable()
+email_educ_fit %>% flextable()
 
 
 ```
+***The linear for `email` and `educ` is:***
+$$\widehat{email} = -219.5 + 45.3\times educ$$
+***The average amount of time spent on emails is -219.5 minutes. The average years of education is 45.3 years higher than the average amount of time spent on emails.***
+```{r}
+ email_wrkstat_fit <- linear_reg() %>%
+  set_engine("lm") %>%
+  fit(email~wrkstat, data = gss16) %>%
+  tidy()
+
+
+email_wrkstat_fit %>% flextable()
+
+
+```
+***The linear for `email` and `wrkstat` is:***
+$$\widehat{email} = 172.6 + 152.3\times wrkstatOther + 37.3\times wrkstatRetired +1.0\times wrkstatSchool +151.8\times wrkstatTemp not working + 161.9\times wrkstatUnempl, laid off + 415.5\times wrkstatWorking fulltime + 124.2\times wrkstatWorking parttime$$
+***The average amount of time spent on emails is 172.6 minutes. The average number of other working respondents is 152.3 respondents higher than the average amount of time spent on emails. The average number of retired respondents is 37.3 respondents higher than the average amount of time spent on emails. The average number of working respondents in school is 1.0 respondent higher than the average amount of time spent on emails. The average number of respondents not working is 151.8 respondents higher than the average amount of time spent on emails. The average number of unemployed or laid off respondents is 161.9 respondents higher than the average amount of time spent on emails. The average number of respondents working full time is 415.5 respondents higher than the average amount of time spent on emails. The average number of respondents working part time is 124.2 respondents higher than the average amount of time spent on emails.***
+
+```{r}
+ email_snap_insta_fit <- linear_reg() %>%
+  set_engine("lm") %>%
+  fit(email~snap_insta, data = gss16) %>%
+  tidy()
+
+
+email_snap_insta_fit %>% flextable()
+
+
+```
+***The linear for `email` and `snap_insta` is:***
+$$\widehat{email} = 417.7 + 81.2\times snap_instaYes$$
+***The average amount of time spent on emails is 417.7 minutes. The average number of Snapchat or Instagram users who answered Yes is 81.2 years higher than the average amount of time spent on emails.***
 9.  Create a predicted values vs. residuals plot for this model.
     Are there any issues with the model?
     If yes, describe them.
+```{r}
+gss16 %>%
+  ggplot(aes(x = email, y = educ))+
+  geom_point(alpha = 0.5) +
+  geom_smooth(method = "lm",
+              se = FALSE, color = "#FF00FF") +
+  xlab("Average Minutes on Emails") +
+  ylab("Average Years of Education") +
+  ggtitle("Average Minutes on Emails vs. Average Years of Education")
+```
+***There seems to be nothing wrong with the scatterplot.***
+```{r}
+gss16 %>%
+  ggplot(aes(x = email, y = wrkstat))+
+  geom_point() +
+  xlab("Average Minutes on Emails") +
+  ylab("Work Status") +
+  ggtitle("Average Minutes on Emails vs. Work Status")
+```
+***the only problem with this plot is that I can't use a linear model on this.***
+```{r}
+gss16 %>%
+  ggplot(aes(x = email, y = snap_insta))+
+  geom_point(alpha = 0.5) +
+  xlab("Average Minutes on Emails") +
+  ylab("Snapchat/Instagram User Reply") +
+  ggtitle("Average Minutes on Emails vs. Snapchat/Instagram User Reply")
+```
+***The problem with this plot is that I also can't use a linear model here.***
 
 🧶 ✅ ⬆️ Knit, *commit, and push your changes to GitHub with an appropriate commit message. Make sure to commit and push all changed files so that your Git pane is cleared up afterwards.*
 
