@@ -240,6 +240,7 @@ gss16 %>%
 ```
 ***The problem with this plot is that I also can't use a linear model here.***
 
+
 🧶 ✅ ⬆️ Knit, *commit, and push your changes to GitHub with an appropriate commit message. Make sure to commit and push all changed files so that your Git pane is cleared up afterwards.*
 
 ## Part 3: Political views and science research
@@ -268,14 +269,31 @@ Responses that were originally Don't know, No answer and Not applicable are alre
 10. In a new variable, recode `advfront` such that Strongly Agree and Agree are mapped to `"Yes"`, and Disagree and Strongly disagree are mapped to `"No"`.
     The remaining levels can be left as is.
     Don't overwrite the existing `advfront`, instead pick a different, informative name for your new variable.
-
+```{r}
+gss16 <- gss16 %>%
+  mutate(scirsch_advfront = if_else(advfront%in%c("Strongly agree", "Agree"), "Yes", if_else(advfront%in%c("Disagree", "Strongly disagree"), "No", advfront)))
+```
 
 11. In a new variable, recode `polviews` such that Extremely liberal, Liberal, and Slightly liberal, are mapped to `"Liberal"`, and Slghtly conservative, Conservative, and Extrmly conservative disagree are mapped to `"Conservative"`.
     The remaining levels can be left as is.
     Make sure that the levels are in a reasonable order.
     Don't overwrite the existing `polviews`, instead pick a different, informative name for your new variable.
-
+```{r}
+gss16 <- gss16 %>%
+  mutate(lib_or_cons = if_else(polviews%in%c("Extremely liberal", "Liberal", "Slightly liberal"), "Liberal", if_else(polviews%in%c("Extrmly conservative", "Conservative", "Slghtly conservative"), "Concervative", polviews)))
+```
 12. Create a visualization that displays the relationship between these two new variables and interpret it.
+```{r}
+gss16 %>%
+  ggplot(aes(x = scirsch_advfront, fill = lib_or_cons))+
+  geom_bar(position = "fill") +
+  xlab("Replies of Advancing Frontiers") +
+  ylab("Number of Respondents per Reply") +
+  ggtitle("Replies of Advancing Frontiers vs. Number of Respondents per Reply based on Political Views") +
+  guides(fill = guide_legend(title = "Political Views"))
+```
+
+***It seems that most conservatives and less liberals answered "Don't know" when asked about advancing the frontier and most moderates and less conservatives answered "Yes."***
 
 🧶 ✅ ⬆️ Knit, *commit, and push your changes to GitHub with an appropriate commit message. Make sure to commit and push all changed files so that your Git pane is cleared up afterwards and review the md document on GitHub to make sure you're happy with the final state of your work.*
 
